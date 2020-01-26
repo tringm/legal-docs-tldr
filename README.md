@@ -1,2 +1,3 @@
-# ToS-TLDR
-An attempt to analyze Term of Services based on the rating by https://tosdr.org/
+# legal-docs-tldr
+An attempt to summarize legal documents
+This work was inspired by https://tosdr.org/
