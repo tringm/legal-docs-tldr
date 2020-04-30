@@ -1,29 +1,28 @@
 #!/bin/bash
 
-function usage {
-  echo "usage: $(basename "$0") [target_directory]
+DOWNLOAD_DIR=data/tosdr_services
 
-  download tosdr.org services rating data to the target_directory
-  "
+function check_at_top {
+  if [[ ! -f legal_docs_tldr/__init__.py ]]; then
+    echo
+    echo "error: this script must be run from the project directory"
+    echo
+    exit 1
+  fi
 }
 
-if [[ "$1" == "" ]]
-then
-  echo
-  echo "error: missing target_directory"
-  echo
-  usage
-  exit 1
-fi
-
-if [ -d $1 ]
-then
-  git clone https://github.com/tosdr/tosdr.org.git "$1"
+function download_and_extract {
+  echo "downloading tosdr.org services rating data to $DOWNLOAD_DIR"
+  git clone https://github.com/tosdr/tosdr.org.git "$DOWNLOAD_DIR"
   echo "removing all except the api folder"
-  find "$1" -maxdepth 1 ! -wholename "$1/api" ! -wholename "$1" -exec rm -rf {} \;
+  find "$DOWNLOAD_DIR" -maxdepth 1 ! -wholename "$DOWNLOAD_DIR/api" ! -wholename "$DOWNLOAD_DIR" -exec rm -rf {} \;
   echo "extracting all json files except all.json"
-  find "$1/api" -name "*.json" ! -name "all.json" -exec mv {} "$1" \; && rm -rf "$1/api"
-else
-  echo "error: target_directory $1 does not exist"
-  usage
+  find "$DOWNLOAD_DIR/api" -name "*.json" ! -name "all.json" -exec mv {} "$DOWNLOAD_DIR" \; && rm -rf "$DOWNLOAD_DIR/api"
+}
+
+check_at_top
+if [ ! -d $DOWNLOAD_DIR ]
+then
+  mkdir -p $DOWNLOAD_DIR
 fi
+download_and_extract
