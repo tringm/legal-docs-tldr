@@ -71,3 +71,11 @@ class TosdrDataPreprocessor:
             raise RuntimeError(f'`{service_name}` pointsData content not found')
 
         return [(point_datum.get('quoteText'), point_datum.get('title')) for point_datum in service_point_data.values()]
+
+    @log_exec_time(LOG)
+    def service_urls(self, service_name):
+        """return the urls of a service
+        """
+        service_data = self.get_service_data(service_name)
+        return service_data.get('urls')
+
