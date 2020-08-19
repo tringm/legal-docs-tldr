@@ -83,7 +83,7 @@ class CompareTestCase(BaseTestCase):
         """
         super().setUpClass()
         relative_to_test_dir = cls.module_path.relative_to(TEST_DIR_PATH).parent
-        cls.services_folder = Path(in_folder_path) if in_folder_path \
+        cls.input_folder = Path(in_folder_path) if in_folder_path \
             else TEST_DIR_PATH.joinpath(f'io/in/{relative_to_test_dir}/{cls.__name__}')
         cls.output_folder = Path(out_folder_path) if out_folder_path \
             else TEST_DIR_PATH.joinpath(f'io/out/{relative_to_test_dir}/{cls.__name__}')
