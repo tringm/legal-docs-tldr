@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 
 from core.utils.logging_utils import log_exec_time
+from bs4 import BeautifulSoup
 
 LOADER_LOG = logging.getLogger("TosdrDataLoader")
 PROCESSOR_LOG = logging.getLogger("TosdrDataProcessor")
@@ -83,7 +84,7 @@ class TosdrDataLoader:
         return self._loaded_services_data.get(service_name)
 
 
-def service_quote_text_and_summary(service_data):
+def service_quote_text_and_summary(service_data, remove_html_tags = True):
     """
 
     Args:
@@ -97,7 +98,14 @@ def service_quote_text_and_summary(service_data):
     if not service_point_data:
         raise RuntimeError(f'`{service_data}` pointsData not found')
 
-    return [(point_datum.get('quoteText'), point_datum.get('title')) for point_datum in service_point_data.values()]
+    def get_quote_text(point_datum):
+        quote_text = point_datum.get('quoteText')
+        if remove_html_tags:
+            soup = BeautifulSoup(quote_text, 'lxml')
+            quote_text = soup.text
+        return quote_text
+
+    return [(get_quote_text(point_datum), point_datum.get('title')) for point_datum in service_point_data.values()]
 
 
 def service_urls(service_data):

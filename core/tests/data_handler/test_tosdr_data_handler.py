@@ -27,14 +27,11 @@ class TestTosdrDataLoader(CompareTestCase):
     def get_quote_text_and_summary_step(self):
         self.assertCountEqual(
             service_quote_text_and_summary(self.loader.service_data('nvidia')),
-            [('Right to access.</b> You can see what data we have collected whenever you '
-              'want.</li>\n'
-              '<li>\n'
-              '<b>Right to take your data.</b> The data is yours.\n'
-              'You can copy or move it whenever you want.</li>\n'
-              '<li>\n'
-              "<b>Right to erasure.</b> We'll erase your personal data whenever you say "
-              'the word.',
+            [('Right to access. You can see what data we have collected whenever you '
+              'want.\n\n'
+              'Right to take your data. The data is yours.\n'
+              'You can copy or move it whenever you want.\n\n'
+              'Right to erasure. We\'ll erase your personal data whenever you say the word.',
               'You can request access and deletion of personal data'),
              ('We never sell your data.', 'This service does not sell your personal data')]
         )
