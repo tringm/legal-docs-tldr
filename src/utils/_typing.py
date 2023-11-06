@@ -1,5 +1,5 @@
-from typing import Union, IO
 from pathlib import Path
+from typing import IO, Union
 
 FilePath = Union[str, Path]
 Buffer = IO

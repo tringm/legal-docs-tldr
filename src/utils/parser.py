@@ -11,7 +11,7 @@ from ._typing import FilePath, FilePathOrBuffer
 class ArgParser(argparse.ArgumentParser):
     def __init__(self, **kwargs):
         super().__init__(formatter_class=argparse.RawTextHelpFormatter, **kwargs)
-        self.logger = logging.getLogger('Parser')
+        self.logger = logging.getLogger("Parser")
 
     def error(self, message: str) -> None:
         """Write an error to stderr, print help, and exit
@@ -38,7 +38,7 @@ class ArgParser(argparse.ArgumentParser):
             self.error(f"path {path} does not exist")
         return path
 
-    def parse_input_arg_value(self, input_arg_value: str, stdin_value: str = '-') -> FilePathOrBuffer:
+    def parse_input_arg_value(self, input_arg_value: str, stdin_value: str = "-") -> FilePathOrBuffer:
         """Check if input arg is stdin or a file path
 
         :param input_arg_value:
@@ -47,7 +47,7 @@ class ArgParser(argparse.ArgumentParser):
         """
         return sys.stdin if input_arg_value == stdin_value else self.parse_path(input_arg_value, True)
 
-    def parse_output_arg_value(self, output_arg_value: str, stdout_value: str = '-') -> FilePathOrBuffer:
+    def parse_output_arg_value(self, output_arg_value: str, stdout_value: str = "-") -> FilePathOrBuffer:
         """Check if output arg is stdout or a file path
 
         :param output_arg_value:
@@ -79,22 +79,17 @@ class ArgParser(argparse.ArgumentParser):
         :param default: default prompt value
         :return:
         """
-        valid_responses = {
-            'yes': True,
-            'y': True,
-            'no': False,
-            'n': False
-        }
+        valid_responses = {"yes": True, "y": True, "no": False, "n": False}
         if default is None:
-            prompt = '[y/n]'
+            prompt = "[y/n]"
         elif default:
-            prompt = '[Y/n]'
+            prompt = "[Y/n]"
         else:
-            prompt = '[y/N]'
+            prompt = "[y/N]"
         while True:
             sys.stdout.write(f"{message} {prompt}")
             response = input().lower()
-            if default is not None and response == '':
+            if default is not None and response == "":
                 return default
             elif response in valid_responses:
                 return valid_responses[response]
