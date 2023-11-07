@@ -1,34 +1,31 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
-    hooks:
-      - id: check-ast
-      - id: check-added-large-files
-      - id: check-merge-conflict
-      - id: check-case-conflict
-      - id: check-docstring-first
-      - id: check-json
-      - id: check-yaml
-      - id: debug-statements
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
-      - id: mixed-line-ending
--   repo: local
-    hooks:
-      - id: black
-        name: black
-        entry: poetry run black
-        language: system
-        types: [ python ]
-      - id: mypy
-        name: mypy
-        entry: poetry run mypy .
-        require_serial: true
-        language: system
-        types: [ python ]
-        pass_filenames: false
-      - id: ruff
-        name: ruff
-        entry: poetry run ruff --fix --exit-non-zero-on-fix
-        language: system
-        types: [ python ]
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.0.1
+  hooks:
+    - id: check-ast
+    - id: check-added-large-files
+    - id: check-merge-conflict
+    - id: check-case-conflict
+    - id: check-docstring-first
+    - id: check-json
+    - id: check-yaml
+    - id: debug-statements
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+    - id: mixed-line-ending
+
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 23.10.1
+  hooks:
+  - id: black
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.4
+  hooks:
+    - id: ruff
+      args: [--fix, --exit-non-zero-on-fix]
+
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.6.1
+  hooks:
+  -   id: mypy
