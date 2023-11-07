@@ -148,10 +148,12 @@ exclude = [
     "venv",
     "db/migrations/versions/*",
 ]
-per-file-ignores = {}
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 # Mininal python version we support is 3.8
 target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F403"]
