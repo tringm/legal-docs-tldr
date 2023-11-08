@@ -29,7 +29,7 @@ class Point(BaseModel, _TrackingTimestampMixin):
 class Service(BaseModel):
     id: int  # noqa: A003
     name: str
-    rating: str
-    urls: list[str]
-    documents: list[Document]
-    points: list[Point]
+    rating: None | str = None
+    urls: None | list[str] = None
+    documents: None | list[Document] = None
+    points: None | list[Point] = None
