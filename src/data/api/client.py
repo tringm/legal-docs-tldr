@@ -1,4 +1,4 @@
-from typing import Any, overload
+from typing import Any
 
 import requests
 from aiohttp.client import ClientSession, _RequestContextManager
@@ -24,28 +24,30 @@ class BaseAPIClient:
         self.default_timeout = default_timeout
         self.default_req_params = {"timeout": self.default_timeout}  # enforce ruff S113
 
-    @overload
-    def request(self, *, session: None = None, api_op: None | BaseAPIOperation = None, **kwargs: Any) -> Response:
-        ...
-
-    @overload
-    def request(self, *, session: Session, api_op: None | BaseAPIOperation = None, **kwargs: Any) -> Response:
-        ...
-
-    @overload
-    def request(
-        self, *, session: ClientSession, api_op: None | BaseAPIOperation = None, **kwargs: Any
-    ) -> _RequestContextManager:
-        ...
+    def _build_req_params(self, api_op: None | BaseAPIOperation = None, **kwargs: Any) -> dict[str, Any]:
+        req_kwargs = {"method": api_op.method, "url": self.base_url + api_op.path} if api_op else {}
+        return {**self.default_req_params, **req_kwargs, **kwargs}
 
     def request(
         self,
-        *,
-        session: None | Session | ClientSession = None,
+        session: None | Session = None,
         api_op: None | BaseAPIOperation = None,
+        raise_for_status: bool = True,
         **kwargs: Any,
-    ) -> Response | _RequestContextManager:
-        req_kwargs: dict[str, Any] = {"method": api_op.method, "url": self.base_url + api_op.path} if api_op else {}
-        req_kwargs = {**self.default_req_params, **req_kwargs, **kwargs}
+    ) -> Response:
+        req_kwargs = self._build_req_params(api_op=api_op, **kwargs)
         req_func = session.request if session else requests.request
-        return req_func(**req_kwargs)
+        resp = req_func(**req_kwargs)
+        if raise_for_status:
+            resp.raise_for_status()
+        return resp
+
+    def async_request(
+        self,
+        session: ClientSession,
+        api_op: None | BaseAPIOperation = None,
+        raise_for_status: bool = True,
+        **kwargs: Any,
+    ) -> _RequestContextManager:
+        req_kwargs = self._build_req_params(api_op=api_op, raise_for_status=raise_for_status, **kwargs)
+        return session.request(**req_kwargs)

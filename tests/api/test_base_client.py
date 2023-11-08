@@ -1,6 +1,9 @@
-import aiohttp
+from collections.abc import AsyncIterator
+
 import pytest
+import pytest_asyncio
 import requests
+from aiohttp import ClientResponseError, ClientSession
 
 from src.data.api.client import BaseAPIClient, BaseAPIOperation
 
@@ -15,6 +18,17 @@ def client() -> BaseAPIClient:
 @pytest.fixture
 def api_op() -> BaseAPIOperation:
     return BaseAPIOperation(path="/v2/metrics.json", method="get")
+
+
+@pytest.fixture
+def invalid_api_op() -> BaseAPIOperation:
+    return BaseAPIOperation(path="/invalid_path", method="get")
+
+
+@pytest_asyncio.fixture
+async def async_session() -> AsyncIterator[ClientSession]:
+    async with ClientSession() as sess:
+        yield sess
 
 
 def test_client_request(client: BaseAPIClient) -> None:
@@ -39,9 +53,34 @@ def test_call_api(client: BaseAPIClient, api_op: BaseAPIOperation) -> None:
     assert json_resp, "Non empty response"
 
 
+@pytest.mark.parametrize("raise_for_status", [True, False])
+def test_call_api_fail(client: BaseAPIClient, invalid_api_op: BaseAPIOperation, raise_for_status: bool) -> None:
+    if raise_for_status:
+        with pytest.raises(requests.exceptions.HTTPError):
+            client.request(api_op=invalid_api_op, raise_for_status=True)
+    else:
+        resp = client.request(api_op=invalid_api_op, raise_for_status=raise_for_status)
+        assert resp.status_code == requests.codes["not_found"]
+
+
 @pytest.mark.asyncio
-async def test_async_call_api(client: BaseAPIClient, api_op: BaseAPIOperation) -> None:
-    async with aiohttp.ClientSession() as session, client.request(session=session, api_op=api_op) as resp:
+async def test_async_call_api(async_session: ClientSession, client: BaseAPIClient, api_op: BaseAPIOperation) -> None:
+    async with client.async_request(session=async_session, api_op=api_op) as resp:
         assert resp.status == requests.codes["ok"]
         json_resp = await resp.json()
         assert json_resp, "Non empty response"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("raise_for_status", [True, False])
+async def test_async_call_api_fail(
+    client: BaseAPIClient, async_session: ClientSession, invalid_api_op: BaseAPIOperation, raise_for_status: bool
+) -> None:
+    if raise_for_status:
+        with pytest.raises(ClientResponseError):
+            await client.async_request(session=async_session, api_op=invalid_api_op, raise_for_status=raise_for_status)
+    else:
+        async with client.async_request(
+            session=async_session, api_op=invalid_api_op, raise_for_status=raise_for_status
+        ) as resp:
+            assert resp.status == requests.codes["not_found"]
