@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, overload
 
 import requests
 from aiohttp.client import ClientSession, _RequestContextManager
@@ -19,64 +19,33 @@ class BaseAPIOperation(BaseModel):
 
 
 class BaseAPIClient:
-    def __init__(self, base_url: str, default_timeout: float = 10) -> None:
+    def __init__(self, base_url: str, default_timeout: float = 10.0) -> None:
         self.base_url = base_url
         self.default_timeout = default_timeout
         self.default_req_params = {"timeout": self.default_timeout}  # enforce ruff S113
 
-    def request(self, session: Session | None = None, **kwargs: Any) -> Response:
-        kwargs = {**self.default_req_params, **kwargs}
+    @overload
+    def request(self, *, session: None = None, api_op: None | BaseAPIOperation = None, **kwargs: Any) -> Response:
+        ...
+
+    @overload
+    def request(self, *, session: Session, api_op: None | BaseAPIOperation = None, **kwargs: Any) -> Response:
+        ...
+
+    @overload
+    def request(
+        self, *, session: ClientSession, api_op: None | BaseAPIOperation = None, **kwargs: Any
+    ) -> _RequestContextManager:
+        ...
+
+    def request(
+        self,
+        *,
+        session: None | Session | ClientSession = None,
+        api_op: None | BaseAPIOperation = None,
+        **kwargs: Any,
+    ) -> Response | _RequestContextManager:
+        req_kwargs: dict[str, Any] = {"method": api_op.method, "url": self.base_url + api_op.path} if api_op else {}
+        req_kwargs = {**self.default_req_params, **req_kwargs, **kwargs}
         req_func = session.request if session else requests.request
-        return req_func(**kwargs)
-
-    def call_api(self, api_op: BaseAPIOperation, session: Session | None = None, **kwargs: Any) -> Response:
-        kwargs = {"session": session, "url": self.base_url + api_op.path, "method": api_op.method, **kwargs}
-        return self.request(**kwargs)
-
-    def get(self, session: Session | None = None, **kwargs: Any) -> Response:
-        kwargs = {"method": "get", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.request(**kwargs)
-
-    def post(self, session: Session | None = None, **kwargs: Any) -> Response:
-        kwargs = {"method": "post", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.request(**kwargs)
-
-    def put(self, session: Session | None = None, **kwargs: Any) -> Response:
-        kwargs = {"method": "put", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.request(**kwargs)
-
-    def patch(self, session: Session | None = None, **kwargs: Any) -> Response:
-        kwargs = {"method": "patch", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.request(**kwargs)
-
-    def delete(self, session: Session | None = None, **kwargs: Any) -> Response:
-        kwargs = {"method": "delete", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.request(**kwargs)
-
-    def async_request(self, session: ClientSession, **kwargs: Any) -> _RequestContextManager:
-        kwargs = {**self.default_req_params, **kwargs}
-        return session.request(**kwargs)
-
-    def async_call_api(self, api_op: BaseAPIOperation, session: ClientSession, **kwargs: Any) -> _RequestContextManager:
-        kwargs = {"session": session, "url": self.base_url + api_op.path, "method": api_op.method, **kwargs}
-        return self.async_request(**kwargs)
-
-    async def async_get(self, session: ClientSession, **kwargs: Any) -> _RequestContextManager:
-        kwargs = {"method": "get", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.async_request(**kwargs)
-
-    async def async_post(self, session: ClientSession, **kwargs: Any) -> _RequestContextManager:
-        kwargs = {"method": "post", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.async_request(**kwargs)
-
-    async def async_put(self, session: ClientSession, **kwargs: Any) -> _RequestContextManager:
-        kwargs = {"method": "put", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.async_request(**kwargs)
-
-    async def async_patch(self, session: ClientSession, **kwargs: Any) -> _RequestContextManager:
-        kwargs = {"method": "patch", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.async_request(**kwargs)
-
-    async def async_delete(self, session: ClientSession, **kwargs: Any) -> _RequestContextManager:
-        kwargs = {"method": "delete", "timeout": self.default_timeout, "session": session, **kwargs}
-        return self.async_request(**kwargs)
+        return req_func(**req_kwargs)

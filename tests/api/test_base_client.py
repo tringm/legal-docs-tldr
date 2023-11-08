@@ -33,7 +33,7 @@ def test_client_request_with_session(client: BaseAPIClient) -> None:
 
 
 def test_call_api(client: BaseAPIClient, api_op: BaseAPIOperation) -> None:
-    resp = client.call_api(api_op=api_op)
+    resp = client.request(api_op=api_op)
     assert resp.status_code == requests.codes["ok"]
     json_resp = resp.json()
     assert json_resp, "Non empty response"
@@ -41,7 +41,7 @@ def test_call_api(client: BaseAPIClient, api_op: BaseAPIOperation) -> None:
 
 @pytest.mark.asyncio
 async def test_async_call_api(client: BaseAPIClient, api_op: BaseAPIOperation) -> None:
-    async with aiohttp.ClientSession() as session, client.async_call_api(session=session, api_op=api_op) as resp:
+    async with aiohttp.ClientSession() as session, client.request(session=session, api_op=api_op) as resp:
         assert resp.status == requests.codes["ok"]
         json_resp = await resp.json()
         assert json_resp, "Non empty response"
