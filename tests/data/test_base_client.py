@@ -5,7 +5,7 @@ import pytest_asyncio
 import requests
 from aiohttp import ClientResponseError, ClientSession
 
-from src.data.api.client import BaseAPIClient, BaseAPIOperation
+from src.data.base_client import BaseAPIClient, BaseAPIOperation
 
 TEST_API_URL = "https://api.apis.guru"
 
