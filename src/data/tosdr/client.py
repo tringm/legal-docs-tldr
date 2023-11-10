@@ -10,12 +10,12 @@ from requests import codes
 
 from src.data.base_client import BaseAPIClient, BaseAPIOperation, Response
 
-from .models import Service
+from .models import Service, ServiceMetadata
 
 __all__ = [
     "Client",
     "GetServiceResponse",
-    "GetServicePageResponse",
+    "GetServiceMetadataPageResponse",
 ]
 
 
@@ -23,7 +23,7 @@ class GetServiceResponse(BaseModel):
     service: Service = Field(alias="parameters")
 
 
-class GetServicePageResponse(BaseModel):
+class GetServiceMetadataPageResponse(BaseModel):
     class _Parameter(BaseModel):
         class PageInfo(BaseModel):
             total: int  # total number of service
@@ -32,12 +32,12 @@ class GetServicePageResponse(BaseModel):
             end: int
 
         page_info: PageInfo = Field(alias="_page")
-        services: list[Service]
+        services: list[ServiceMetadata]
 
     parameters: _Parameter
 
     @property
-    def services(self) -> list[Service]:
+    def services_metadata(self) -> list[ServiceMetadata]:
         return self.parameters.services
 
     @property
@@ -68,43 +68,42 @@ class Client(BaseAPIClient):
         resp = self._req_get_service(service_id=service_id)
         return GetServiceResponse.model_validate(resp.json()).service
 
-    def get_service_page(self, page: None | int = 1) -> GetServicePageResponse:
+    def get_service_metadata_page(self, page: int) -> GetServiceMetadataPageResponse:
         resp = self.request(api_op=self.get_service_op, params={"page": page})
-        return GetServicePageResponse.model_validate(resp.json())
+        return GetServiceMetadataPageResponse.model_validate(resp.json())
 
-    @backoff.on_exception(
-        wait_gen=backoff.expo,
-        exception=aiohttp.ClientResponseError,
-        max_tries=10,
-        giveup=lambda e: e.status != codes["too_many"],
-    )
-    async def _async_get_services_by_page(self, session: ClientSession, page: int) -> list[Service]:
-        async with self.rate_limieter, self.async_request(
-            session=session, api_op=self.get_service_op, params={"page": page}, raise_for_status=True
-        ) as resp:
-            logger.info(f"Getting service page {page}")
-            _json_resp = await resp.json(content_type=None)
-            return GetServicePageResponse.model_validate(_json_resp).services
-
-    async def _async_get_services(self, page_indexes: list[int]) -> list[Service]:
-        async with ClientSession(raise_for_status=True) as session:
-            tasks = (self._async_get_services_by_page(session=session, page=page) for page in page_indexes)
-
-            coro_returns = await asyncio.gather(*tasks, return_exceptions=True)
-
-            services = []
-            for idx, coro_ret in enumerate(coro_returns):
-                if isinstance(coro_ret, Exception):
-                    logger.error(f"Failed to query service page {page_indexes[idx]}: {coro_ret}")
-                else:
-                    services += coro_ret
-            return services
-
-    def get_all_services(self) -> list[Service]:
-        first_page = self.get_service_page(page=1)
-        remaining_pages_services = asyncio.run(
-            self._async_get_services(
-                page_indexes=list(range(2, first_page.total_page_count + 1)),
-            )
+    def get_all_services_metadata(self) -> list[ServiceMetadata]:
+        @backoff.on_exception(
+            wait_gen=backoff.expo,
+            exception=aiohttp.ClientResponseError,
+            max_tries=10,
+            giveup=lambda e: e.status != codes["too_many"],
         )
-        return [*first_page.services, *remaining_pages_services]
+        async def _async_get_services_metadata_in_page(session: ClientSession, page: int) -> list[ServiceMetadata]:
+            async with self.rate_limieter, self.async_request(
+                session=session, api_op=self.get_service_op, params={"page": page}, raise_for_status=True
+            ) as resp:
+                logger.info(f"Getting service page {page}")
+                _json_resp = await resp.json(content_type=None)
+                return GetServiceMetadataPageResponse.model_validate(_json_resp).services_metadata
+
+        async def _async_get_remaining_services_metadata() -> list[ServiceMetadata]:
+            async with ClientSession(raise_for_status=True) as session:
+                tasks = (
+                    _async_get_services_metadata_in_page(session=session, page=page) for page in remaining_pages_indices
+                )
+
+                coro_returns = await asyncio.gather(*tasks, return_exceptions=True)
+
+                services = []
+                for idx, coro_ret in enumerate(coro_returns):
+                    if isinstance(coro_ret, Exception):
+                        logger.error(f"Failed to query service page {remaining_pages_indices[idx]}: {coro_ret}")
+                    else:
+                        services += coro_ret
+                return services
+
+        first_page = self.get_service_metadata_page(page=1)
+        remaining_pages_indices = range(2, first_page.total_page_count + 1)
+        remaining_services_metadata = asyncio.run(_async_get_remaining_services_metadata())
+        return [*first_page.services_metadata, *remaining_services_metadata]
