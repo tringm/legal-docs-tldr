@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import BaseModel, Field
 from requests import codes
 
-from src.data.api.client import BaseAPIClient, BaseAPIOperation, Response
+from src.data.base_client import BaseAPIClient, BaseAPIOperation, Response
 
 from .models import Service
 

@@ -1,7 +1,7 @@
 import pytest
 from pytest_mock import MockFixture
 
-from src.data.api.tosdr import Client, Service
+from src.data.tosdr import Client, Service
 
 TEST_SERVICE_ID = 222
 TEST_SERVICE_NAME = "DuckDuckGo"
@@ -20,7 +20,7 @@ def test_get_service(client: Client) -> None:
 
 def test_get_all_services(client: Client, mocker: MockFixture) -> None:
     total_page_count_mock = mocker.patch(
-        target="src.data.api.tosdr.client.GetServicePageResponse.total_page_count", new_callable=mocker.PropertyMock
+        target="src.data.tosdr.client.GetServicePageResponse.total_page_count", new_callable=mocker.PropertyMock
     )
     total_page_count_mock.return_value = 2
     services = client.get_all_services()
