@@ -62,8 +62,7 @@ class BaseAPIClient:
         self,
         session: ClientSession,
         api_op: None | BaseAPIOperation = None,
-        raise_for_status: bool = True,
         **kwargs: Any,
     ) -> _RequestContextManager:
-        req_kwargs = self._build_req_params(api_op=api_op, raise_for_status=raise_for_status, **kwargs)
+        req_kwargs = self._build_req_params(api_op=api_op, **kwargs)
         return session.request(**req_kwargs)
