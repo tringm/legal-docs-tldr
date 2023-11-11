@@ -13,12 +13,12 @@ class SampleModel(BaseModel):
 
 @pytest.fixture
 def sample_models() -> list[BaseModel]:
-    return [SampleModel(pos=1)]
+    return [SampleModel(pos=1), SampleModel(pos=2)]
 
 
 @pytest.fixture
 def sample_ndjson() -> list[dict]:
-    return [{"pos": 1}]
+    return [{"pos": 1}, {"pos": 2}]
 
 
 @pytest.fixture
