@@ -1,6 +1,6 @@
 from pydantic import AwareDatetime, BaseModel
 
-__all__ = ["Document", "Point", "Service"]
+__all__ = ["Document", "Point", "Service", "ServiceMetadata"]
 
 
 class _TrackingTimestampMixin:
@@ -19,17 +19,23 @@ class Document(BaseModel, _TrackingTimestampMixin):
 class Point(BaseModel, _TrackingTimestampMixin):
     id: int  # noqa: A003
     title: str
-    source: str
     status: str
     analysis: str
+    source: None | str = None
     case_id: None | int = None
     document_id: None | int = None
 
 
-class Service(BaseModel):
+class Service(BaseModel, _TrackingTimestampMixin):
+    id: int  # noqa: A003
+    name: str
+    points: list[Point]
+    urls: list[str]
+    rating: None | str = None
+    documents: None | list[Document] = None
+
+
+class ServiceMetadata(BaseModel, _TrackingTimestampMixin):
     id: int  # noqa: A003
     name: str
     rating: None | str = None
-    urls: None | list[str] = None
-    documents: None | list[Document] = None
-    points: None | list[Point] = None
