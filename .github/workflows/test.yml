@@ -18,4 +18,5 @@ jobs:
           python-version: '3.10.13'
           cache: 'poetry'
       - uses: pre-commit/action@v3.0.0
-      - run: make tests
+      - run: poetry install
+      - run: poetry run pytest
