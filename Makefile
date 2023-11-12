@@ -1,13 +1,11 @@
 WORKDIR?=.
 VENVDIR?=$(WORKDIR)/.venv
 
-setup: venv pre-commit
-
 # Virtual environment
 .PHONY: venv
 venv: $(VENVDIR)/bin/activate
 
-#.PHONY: clean-venv
+.PHONY: clean-venv
 clean-venv:
 	rm -rf $(VENVDIR)
 
@@ -16,12 +14,6 @@ poetry.lock: pyproject.toml
 
 $(VENVDIR)/bin/activate: poetry.lock
 	poetry install
-
-
-# Pre-commit
-.PHONY: pre-commit
-pre-commit: .pre-commit-config.yaml
-	pre-commit install
 
 .PHONY: tests
 tests: venv
