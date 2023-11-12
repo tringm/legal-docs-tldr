@@ -746,6 +746,17 @@ files = [
 ]
 
 [[package]]
+name = "ndjson"
+version = "0.3.1"
+description = "JsonDecoder for ndjson"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ndjson-0.3.1-py2.py3-none-any.whl", hash = "sha256:839c22275e6baa3040077b83c005ac24199b94973309a8a1809be962c753a410"},
+    {file = "ndjson-0.3.1.tar.gz", hash = "sha256:bf9746cb6bb1cb53d172cda7f154c07c786d665ff28341e4e689b796b229e5d6"},
+]
+
+[[package]]
 name = "nodeenv"
 version = "1.8.0"
 description = "Node.js virtual environment builder"
@@ -1330,4 +1341,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10.1, <4.0"
-content-hash = "3734da0a9ca3c53e70b4b0cd291d1e2195a3de2f4b951c73a151edac347f7563"
+content-hash = "c4305e010d793308db56cde68dac5735052e5cd68c2225026608b19f629a2ac5"
