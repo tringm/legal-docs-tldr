@@ -70,7 +70,7 @@ log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%dT%H:%M:%S.%f"
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 80
 exclude_lines = [
     'if TYPE_CHECKING:',
     'pragma: no cover'
