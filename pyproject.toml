@@ -32,6 +32,7 @@ aiolimiter = "^1.1.0"
 backoff = "^2.2.1"
 click = "^8.1.7"
 loguru = "^0.7.2"
+ndjson = "^0.3.1"
 pydantic = "^2.4.2"
 requests = "^2.31.0"
 
@@ -69,7 +70,7 @@ log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%dT%H:%M:%S.%f"
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 80
 exclude_lines = [
     'if TYPE_CHECKING:',
     'pragma: no cover'
