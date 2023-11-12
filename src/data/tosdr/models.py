@@ -19,20 +19,20 @@ class Document(BaseModel, _TrackingTimestampMixin):
 class Point(BaseModel, _TrackingTimestampMixin):
     id: int  # noqa: A003
     title: str
-    source: str
     status: str
     analysis: str
+    source: None | str = None
     case_id: None | int = None
     document_id: None | int = None
 
 
-class Service(BaseModel):
+class Service(BaseModel, _TrackingTimestampMixin):
     id: int  # noqa: A003
     name: str
+    points: list[Point]
+    urls: list[str]
     rating: None | str = None
-    urls: None | list[str] = None
     documents: None | list[Document] = None
-    points: None | list[Point] = None
 
 
 class ServiceMetadata(BaseModel, _TrackingTimestampMixin):
