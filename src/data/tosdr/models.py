@@ -1,4 +1,8 @@
-from pydantic import AwareDatetime, BaseModel
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    Field,
+)
 
 __all__ = ["Document", "Point", "Service", "ServiceMetadata"]
 
@@ -16,13 +20,17 @@ class Document(BaseModel, _TrackingTimestampMixin):
     text: None | str = None
 
 
+class _RatingObject(BaseModel):
+    human_rating: str = Field(alias="human")
+
+
 class Point(BaseModel, _TrackingTimestampMixin):
     id: int  # noqa: A003
     title: str
     status: str
     analysis: str
+    case_id: int
     source: None | str = None
-    case_id: None | int = None
     document_id: None | int = None
 
 
@@ -38,4 +46,8 @@ class Service(BaseModel, _TrackingTimestampMixin):
 class ServiceMetadata(BaseModel, _TrackingTimestampMixin):
     id: int  # noqa: A003
     name: str
-    rating: None | str = None
+    rating_: _RatingObject = Field(alias="rating")
+
+    @property
+    def rating(self) -> str:
+        return self.rating_.human_rating

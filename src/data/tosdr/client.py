@@ -55,7 +55,7 @@ class GetServiceMetadataPageResponse(BaseModel):
 
 class GetServiceOp(BaseAPIOperation):
     method: str = "GET"
-    path: str = "/service/v2/"
+    path: str = "/service/v1/"
 
 
 class Client(BaseAPIClient):
@@ -67,7 +67,7 @@ class Client(BaseAPIClient):
 
     @staticmethod
     def _build_get_service_op(service_id: int) -> GetServiceOp:
-        return GetServiceOp(params={"id": service_id})
+        return GetServiceOp(params={"service": service_id})
 
     @staticmethod
     def _build_get_service_metadata_op(page_index: int) -> GetServiceOp:
