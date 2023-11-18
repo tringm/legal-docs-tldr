@@ -12,7 +12,9 @@ from requests import codes
 from src.data.base_client import BaseAPIClient, BaseAPIOperation
 
 from .models import (
+    BasePage,
     Case,
+    CasePage,
     Service,
     ServiceMetadata,
     ServiceMetadataPage,
@@ -20,30 +22,25 @@ from .models import (
 
 __all__ = [
     "Client",
+    "GetCaseOp",
+    "GetServiceOp",
+    "GetCaseResponse",
+    "GetCasePageResponse",
     "GetServiceResponse",
     "GetServiceMetadataPageResponse",
 ]
 
-ResponseModelType = TypeVar("ResponseModelType")
+ModelType = TypeVar("ModelType", bound=BaseModel)
+PageModelType = TypeVar("PageModelType", bound=BasePage)
 
 
-class BaseResponse(BaseModel, Generic[ResponseModelType]):
-    parameters: ResponseModelType
+class BaseResponse(BaseModel, Generic[ModelType]):
+    parameters: ModelType
 
 
-class GetServiceResponse(BaseResponse[Service]):
+class BasePageResponse(BaseResponse[PageModelType]):
     @property
-    def service(self) -> Service:
-        return self.parameters
-
-
-class GetServiceMetadataPageResponse(BaseResponse[ServiceMetadataPage]):
-    @property
-    def services_metadata(self) -> list[ServiceMetadata]:
-        return self.parameters.services
-
-    @property
-    def total_service_count(self) -> int:
+    def total_resource_count(self) -> int:
         return self.parameters.page_info.total
 
     @property
@@ -55,10 +52,28 @@ class GetServiceMetadataPageResponse(BaseResponse[ServiceMetadataPage]):
         return self.parameters.page_info.current
 
 
+class GetServiceResponse(BaseResponse[Service]):
+    @property
+    def service(self) -> Service:
+        return self.parameters
+
+
+class GetServiceMetadataPageResponse(BasePageResponse[ServiceMetadataPage]):
+    @property
+    def services_metadata(self) -> list[ServiceMetadata]:
+        return self.parameters.services
+
+
 class GetCaseResponse(BaseResponse[Case]):
     @property
     def case(self) -> Case:
         return self.parameters
+
+
+class GetCasePageResponse(BasePageResponse[CasePage]):
+    @property
+    def cases(self) -> list[Case]:
+        return self.parameters.cases
 
 
 class GetServiceOp(BaseAPIOperation):
@@ -164,6 +179,42 @@ class Client(BaseAPIClient):
     def _build_get_case_op(case_id: int) -> GetCaseOp:
         return GetCaseOp(params={"case": case_id})
 
+    @staticmethod
+    def _build_get_case_page_op(page_index: int) -> GetCaseOp:
+        return GetCaseOp(params={"page": page_index})
+
     def get_case(self, case_id: int) -> Case:
         resp = self.request(api_op=self._build_get_case_op(case_id=case_id))
         return GetCaseResponse.model_validate(resp.json()).case
+
+    def get_case_page(self, page_index: int) -> GetCasePageResponse:
+        resp = self.request(api_op=self._build_get_case_page_op(page_index=page_index))
+        return GetCasePageResponse.model_validate(resp.json())
+
+    async def async_get_case_page(self, session: ClientSession, page_index: int) -> GetCasePageResponse:
+        async with self.rate_limiter, self.async_request(
+            session=session, api_op=self._build_get_case_page_op(page_index=page_index)
+        ) as resp:
+            logger.info(f"Getting case page {page_index}")
+            json_resp = await resp.json(content_type=None)
+            return GetCasePageResponse.model_validate(json_resp)
+
+    async def async_get_multiple_case_pages(self, page_indices: list[int]) -> list[GetCasePageResponse]:
+        async with ClientSession(raise_for_status=True) as session:
+            tasks = (self.async_get_case_page(session=session, page_index=page_idx) for page_idx in page_indices)
+
+            coro_returns = await asyncio.gather(*tasks, return_exceptions=True)
+
+            pages = []
+            for idx, coro_ret in enumerate(coro_returns):
+                if isinstance(coro_ret, Exception):
+                    logger.error(f"Failed to query case page {page_indices[idx]}: {coro_ret}")
+                else:
+                    pages.append(coro_ret)
+            return pages
+
+    def get_all_cases(self) -> list[Case]:
+        first_page = self.get_case_page(page_index=1)
+        remaining_pages_indices = list(range(2, first_page.total_page_count + 1))
+        remaining_pages = asyncio.run(self.async_get_multiple_case_pages(page_indices=remaining_pages_indices))
+        return [*first_page.cases, *(case for page in remaining_pages for case in page.cases)]

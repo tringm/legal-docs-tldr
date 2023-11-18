@@ -51,3 +51,12 @@ def test_get_all_services(client: Client, mocker: MockFixture) -> None:
 def test_get_case(client: Client) -> None:
     case = client.get_case(case_id=TEST_CASE_ID)
     assert isinstance(case, Case)
+
+
+def test_get_all_cases(client: Client) -> None:
+    first_case_page = client.get_case_page(page_index=1)
+    total_cases_count = first_case_page.total_resource_count
+
+    all_cases = client.get_all_cases()
+    assert len(all_cases) == total_cases_count, f"Expected {total_cases_count} cases, got {len(all_cases)}"
+    assert all(isinstance(case, Case) for case in all_cases), "Expected all return Case Models"

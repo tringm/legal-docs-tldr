@@ -8,12 +8,14 @@ from pydantic import (
 )
 
 __all__ = [
+    "BasePage",
+    "Case",
+    "CasePage",
     "Document",
+    "PageInfo",
     "Point",
     "Service",
     "ServiceMetadata",
-    "Case",
-    "PageInfo",
     "ServiceMetadataPage",
 ]
 
@@ -86,12 +88,19 @@ class ServiceMetadata(BaseModel, _TrackingTimestampMixin):
 
 
 class PageInfo(BaseModel):
-    total: int  # total number of service
-    current: int  # current page
+    total: int
+    current: int
     start: int
     end: int
 
 
-class ServiceMetadataPage(BaseModel):
+class BasePage(BaseModel):
     page_info: PageInfo = Field(alias="_page")
+
+
+class ServiceMetadataPage(BasePage):
     services: list[ServiceMetadata]
+
+
+class CasePage(BasePage):
+    cases: list[Case]
