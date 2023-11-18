@@ -1,16 +1,17 @@
 import asyncio
+from typing import Generic, TypeVar
 
 import aiohttp
 import backoff
 from aiohttp.client import ClientSession
 from aiolimiter import AsyncLimiter
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from requests import codes
 
 from src.data.base_client import BaseAPIClient, BaseAPIOperation
 
-from .models import Service, ServiceMetadata
+from .models import Service, ServiceMetadata, ServiceMetadataPage
 
 __all__ = [
     "Client",
@@ -18,24 +19,20 @@ __all__ = [
     "GetServiceMetadataPageResponse",
 ]
 
-
-class GetServiceResponse(BaseModel):
-    service: Service = Field(alias="parameters")
+ResponseModelType = TypeVar("ResponseModelType")
 
 
-class GetServiceMetadataPageResponse(BaseModel):
-    class _Parameter(BaseModel):
-        class PageInfo(BaseModel):
-            total: int  # total number of service
-            current: int  # current page
-            start: int
-            end: int
+class BaseResponse(BaseModel, Generic[ResponseModelType]):
+    parameters: ResponseModelType
 
-        page_info: PageInfo = Field(alias="_page")
-        services: list[ServiceMetadata]
 
-    parameters: _Parameter
+class GetServiceResponse(BaseResponse[Service]):
+    @property
+    def service(self) -> Service:
+        return self.parameters
 
+
+class GetServiceMetadataPageResponse(BaseResponse[ServiceMetadataPage]):
     @property
     def services_metadata(self) -> list[ServiceMetadata]:
         return self.parameters.services

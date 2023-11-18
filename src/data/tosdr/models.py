@@ -7,7 +7,15 @@ from pydantic import (
     field_validator,
 )
 
-__all__ = ["Document", "Point", "Service", "ServiceMetadata"]
+__all__ = [
+    "Document",
+    "Point",
+    "Service",
+    "ServiceMetadata",
+    "Case",
+    "PageInfo",
+    "ServiceMetadataPage",
+]
 
 
 class _TrackingTimestampMixin:
@@ -75,3 +83,15 @@ class ServiceMetadata(BaseModel, _TrackingTimestampMixin):
     @property
     def rating(self) -> str:
         return self.rating_.human_rating
+
+
+class PageInfo(BaseModel):
+    total: int  # total number of service
+    current: int  # current page
+    start: int
+    end: int
+
+
+class ServiceMetadataPage(BaseModel):
+    page_info: PageInfo = Field(alias="_page")
+    services: list[ServiceMetadata]
