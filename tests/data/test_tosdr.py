@@ -3,10 +3,11 @@ import asyncio
 import pytest
 from pytest_mock import MockFixture
 
-from src.data.tosdr import Client, Service, ServiceMetadata
+from src.data.tosdr import Case, Client, Service, ServiceMetadata
 
 TEST_SERVICE_ID = 222
 TEST_SERVICE_NAME = "DuckDuckGo"
+TEST_CASE_ID = 175
 
 
 @pytest.fixture
@@ -45,3 +46,8 @@ def test_get_all_services(client: Client, mocker: MockFixture) -> None:
         isinstance(serv, ServiceMetadata) for serv in services_metadata
     ), "Expected all objects are ServiceMetadata model"
     assert len({ser.id for ser in services_metadata}) == expected_service_count, "Expected all services id are unique"
+
+
+def test_get_case(client: Client) -> None:
+    case = client.get_case(case_id=TEST_CASE_ID)
+    assert isinstance(case, Case)

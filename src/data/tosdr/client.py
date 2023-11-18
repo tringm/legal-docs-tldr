@@ -11,7 +11,12 @@ from requests import codes
 
 from src.data.base_client import BaseAPIClient, BaseAPIOperation
 
-from .models import Service, ServiceMetadata, ServiceMetadataPage
+from .models import (
+    Case,
+    Service,
+    ServiceMetadata,
+    ServiceMetadataPage,
+)
 
 __all__ = [
     "Client",
@@ -50,9 +55,20 @@ class GetServiceMetadataPageResponse(BaseResponse[ServiceMetadataPage]):
         return self.parameters.page_info.current
 
 
+class GetCaseResponse(BaseResponse[Case]):
+    @property
+    def case(self) -> Case:
+        return self.parameters
+
+
 class GetServiceOp(BaseAPIOperation):
     method: str = "GET"
-    path: str = "/service/v1/"
+    path: str = "/service/v1"
+
+
+class GetCaseOp(BaseAPIOperation):
+    method: str = "GET"
+    path: str = "/case/v1"
 
 
 class Client(BaseAPIClient):
@@ -143,3 +159,11 @@ class Client(BaseAPIClient):
                 else:
                     services.append(coro_ret)
             return services
+
+    @staticmethod
+    def _build_get_case_op(case_id: int) -> GetCaseOp:
+        return GetCaseOp(params={"case": case_id})
+
+    def get_case(self, case_id: int) -> Case:
+        resp = self.request(api_op=self._build_get_case_op(case_id=case_id))
+        return GetCaseResponse.model_validate(resp.json()).case
