@@ -3,6 +3,12 @@ from typing import IO, Any
 
 from bs4 import BeautifulSoup, Tag
 
+__all__ = [
+    "MarkupType",
+    "TagNotFoundException",
+    "parse_case_point_rows_from_html",
+]
+
 MarkupType = str | bytes | IO[str] | IO[bytes]
 
 

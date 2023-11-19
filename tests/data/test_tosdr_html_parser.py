@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from src.data.tosdr.html_parser import parse_case_point_rows_from_html
+from src.data.tosdr import parse_case_point_rows_from_html
 
 
 @pytest.fixture
