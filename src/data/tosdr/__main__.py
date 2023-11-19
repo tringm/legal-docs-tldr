@@ -8,7 +8,7 @@ from src.data.tosdr import ServiceMetadata
 from src.utils.file_utils import read_ndjson_gz, write_pydantic_models_ndjson_gz
 from src.utils.paths import DATA_DIR_PATH
 
-from .client import Client
+from .api_client import APIClient
 
 TOSDR_DATA_DIR = (DATA_DIR_PATH / "tosdr").resolve()
 DEFAULT_ALL_SERVICES_METADATA_OUTPUT_FILE = TOSDR_DATA_DIR / "all_services_metadata.ndjson.gz"
@@ -30,7 +30,7 @@ def cli() -> None:
 )
 def download_all_services_metadata(output_file: Path) -> None:
     """Download all services metadata to a gzipped ndjson file"""
-    client = Client()
+    client = APIClient()
     services_metadata = client.get_all_services_metadata()
     write_pydantic_models_ndjson_gz(models=services_metadata, output_file=output_file)
 
@@ -53,7 +53,7 @@ def download_all_services(metadata_file: Path, output_file: Path) -> None:
     services_ids = [ServiceMetadata.model_validate(serv).id for serv in services_metadata]
 
     logger.info(f"Downloading {len(services_ids)} services")
-    client = Client()
+    client = APIClient()
     services = asyncio.run(client.async_get_services(services_ids=services_ids))
     write_pydantic_models_ndjson_gz(models=services, output_file=output_file)
 
@@ -67,7 +67,7 @@ def download_all_services(metadata_file: Path, output_file: Path) -> None:
 )
 def download_all_cases(output_file: Path) -> None:
     """Download all cases to a gzipped ndjson file"""
-    client = Client()
+    client = APIClient()
     cases = client.get_all_cases()
     write_pydantic_models_ndjson_gz(models=cases, output_file=output_file)
 

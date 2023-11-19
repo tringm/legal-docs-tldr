@@ -21,7 +21,7 @@ from .models import (
 )
 
 __all__ = [
-    "Client",
+    "APIClient",
     "GetCaseOp",
     "GetServiceOp",
     "GetCaseResponse",
@@ -86,7 +86,7 @@ class GetCaseOp(BaseAPIOperation):
     path: str = "/case/v1"
 
 
-class Client(BaseAPIClient):
+class APIClient(BaseAPIClient):
     base_url = "https://api.tosdr.org"
 
     def __init__(self) -> None:
