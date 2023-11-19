@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from src.data.tosdr import CasePoint, EditSiteClient
@@ -20,3 +22,11 @@ def test_get_case_points(client: EditSiteClient) -> None:
     assert all(
         point.case_id == TEST_CASE_ID for point in case_points
     ), f"Expected all has correct case_id {TEST_CASE_ID}"
+
+
+def test_get_multiple_case_points(client: EditSiteClient) -> None:
+    case_ids = [173, 174, 175]
+    case_points = asyncio.run(client.async_get_multiple_case_points(case_ids=case_ids))
+    assert all(isinstance(cp, CasePoint) for cp in case_points), "Expected all returned are CasePoint models"
+    for c_id in case_ids:
+        assert any(cp.case_id == c_id for cp in case_points), f"Expected at at least one CasePoint with case_id {c_id}"
