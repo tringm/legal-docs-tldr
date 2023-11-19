@@ -11,6 +11,7 @@ __all__ = [
     "BasePage",
     "Case",
     "CasePage",
+    "CasePoint",
     "Document",
     "PageInfo",
     "Point",
@@ -104,3 +105,10 @@ class ServiceMetadataPage(BasePage):
 
 class CasePage(BasePage):
     cases: list[Case]
+
+
+class CasePoint(BaseModel):
+    case_id: int
+    service_name: str = Field(alias="Service")
+    quote: str = Field(alias="Title")
+    status: str = Field(alias="Status")
