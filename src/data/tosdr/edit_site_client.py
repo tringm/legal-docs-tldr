@@ -34,10 +34,12 @@ class EditSiteClient(BaseAPIClient):
 
     @staticmethod
     def _parse_case_points_from_html(html: str, case_id: int) -> list[CasePoint]:
-        return [
-            CasePoint.model_validate({"case_id": case_id, **row})
-            for row in parse_case_point_rows_from_html(markup=html)
-        ]
+        try:
+            rows = parse_case_point_rows_from_html(markup=html)
+            return [CasePoint.model_validate({"case_id": case_id, **row}) for row in rows]
+        except Exception as e:
+            logger.error(f"Failed to parse case {case_id} html: {e}")
+            raise
 
     def get_case_points(self, case_id: int) -> list[CasePoint]:
         resp = self.request(api_op=self._build_get_case_points_op(case_id=case_id))
