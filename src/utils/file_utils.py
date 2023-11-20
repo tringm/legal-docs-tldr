@@ -36,7 +36,7 @@ def write_pydantic_models_ndjson_gz(
     ndjson_file = _get_ndjson_file_from_gz_file(ndjson_gz_fp=output_file)
 
     if not model_dump_conf:
-        model_dump_conf = {}
+        model_dump_conf = {"by_alias": True}
     with ndjson_file.open("w") as f:
         f.writelines(mod.model_dump_json(**model_dump_conf) + "\n" for mod in models)
     gzip_file(ndjson_file, output_file, keep=False)
