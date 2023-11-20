@@ -26,7 +26,7 @@ class EditSiteClient(BaseAPIClient):
 
     def __init__(self) -> None:
         super().__init__(base_url=self.base_url)
-        self.rate_limiter = AsyncLimiter(max_rate=1, time_period=0.5)
+        self.rate_limiter = AsyncLimiter(max_rate=1, time_period=1)
 
     @staticmethod
     def _build_get_case_points_op(case_id: int) -> GetCasePointsOp:
